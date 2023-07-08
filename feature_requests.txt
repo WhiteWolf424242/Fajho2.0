@@ -1,0 +1,3 @@
+feature requests:
+- lehessen a határt nyilakkal léptetni amint le lett rakva
+- aminek nincsenek meg előfeltételei gomb az legyen szürke és ne lehessen kattintható
