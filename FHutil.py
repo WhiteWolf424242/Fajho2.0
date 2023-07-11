@@ -47,6 +47,10 @@ def trapcalc(x,y):
     return sum
 
 
+def trapadd(sum, x0, y0, x1, y1):
+    if(y0 < y1):
+        return sum + y0 * (x1-x0)  +  (y1-y0) * (x1-x0)/2
+    return sum + y1 * (x1-x0)  +  (y0-y1) * (x1-x0)/2
 
 def getheatingdata(meas):
     act = False
