@@ -4,6 +4,7 @@ import tkinter as tk
 import FHutil
 import matplotlib.pyplot as plt
 plt.ion()
+plt.rcParams["savefig.format"] = "pdf"
 import numpy as np
 import FHeval
 
