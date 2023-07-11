@@ -169,6 +169,29 @@ def getTs(meas):
     meas.bTs = True
 
 
+def getTsOptimized(meas):
+    if(not meas.bBase):
+        print("Error: base fit not found")
+        return
+    if(not meas.bExp):
+        print("Error: exponential fit not found")
+        return
+
+    startpoint = meas.base_end
+
+    meas.Ts = []
+    presum = 0
+    for i in range(len(meas.x)):
+        if(meas.x[i] < startpoint):
+            meas.Ts.append(meas.y[i])
+        else:
+            Tk = getTkValue(meas, meas.x[i])
+
+            presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tk, meas.x[i], meas.y[i] - Tk)
+            meas.Ts.append(meas.y[i] + meas.exp_b*presum)
+    meas.bTs = True
+
+
 def getTkValue(meas, xp = "indep"):
     if(not meas.bBase):
         print("Error in getTkValue(): missing base fit")
