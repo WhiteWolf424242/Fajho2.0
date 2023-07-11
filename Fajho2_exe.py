@@ -26,6 +26,9 @@ proc[0] = multiprocessing.Process(target=pollDesperateMeasures)
 proc[0].start()
 '''
 
+import matplotlib as mpl 
+mpl.rcParams["savefig.directory"] = ""
+
 print("Fajhő program v"+str(version))
 display = FHdisplay.DisplayWindow()
 
