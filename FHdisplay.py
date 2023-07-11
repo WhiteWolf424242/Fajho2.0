@@ -738,8 +738,8 @@ class DisplayWindow:
         self.rangeSelectorMainWindow("Integrál számítása")
 
     def calculateTs(self):
-        print("Pillanat türelmet...")
-        FHeval.getTs(self.active_measurement)
+        #print("Pillanat türelmet...")
+        FHeval.getTsOptimized(self.active_measurement)
         if(self.autoshow):
             self.show(self.active_measurement)
 
