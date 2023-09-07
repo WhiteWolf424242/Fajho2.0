@@ -23,7 +23,7 @@ def fitbase(meas, xmin, xmax):
     meas.base_start = xmin
     meas.base_end = xmax
     params, covs = do_fit(meas.x,meas.y,xmin,xmax)
-    meas.log("\nBase fit in x["+str(xmin)+"; "+str(xmax)+"],   y = p0*x + p1")
+    meas.log("\nElőszakasz illesztése,  x["+str(xmin)+"; "+str(xmax)+"],   y = p0*x + p1")
     meas.fitreport(params, covs)
 
     meas.bBase = True
@@ -56,7 +56,7 @@ def fitexp(meas, xmin,xmax):
     c_guess = 20
     params, covs = curve_fit(lambda t, a, b, c: a * np.exp(-b * t) + c, xf, yf, p0=(a_guess, b_guess, c_guess))
 
-    meas.log("\nExponential fit in x["+str(xmin)+"; "+str(xmax)+"],   y = p0*exp(-p1 * x) + p2")
+    meas.log("\nExponenciális illesztése: x["+str(xmin)+"; "+str(xmax)+"],   y = p0*exp(-p1 * x) + p2")
     meas.fitreport(params, covs)
     meas.bExp = True
     meas.exp_A = params[0]
@@ -97,12 +97,12 @@ def dualfit(meas, method, limit):
 
         if(limit == "free"):
             params, covs = curve_fit(lambda t, a, b, c: a * np.exp(-b * t) + c, xf, yf, p0=(a_guess, b_guess, c_guess))
-            meas.log("\nDual fit: Exponential base correction,   y = p0*exp(-p1 * x) + c")
-            print("Dual fit: Exponential base correction,   y = p0*exp(-p1 * x) + c")
+            meas.log("\nKettős illesztés: exponenciális előszakasz korrekció,   y = p0*exp(-p1 * x) + c")
+            print("Kettős illesztés: exponenciális előszakasz korrekció,   y = p0*exp(-p1 * x) + c")
         else:
             params, covs = curve_fit(lambda t, a, b: a * np.exp(-b * t) + meas.exp_c, xf, yf, p0=(a_guess, b_guess))
-            meas.log("\nDual fit: Exponential base correction [fixed limit],   y = p0*exp(-p1 * x) + "+str(meas.exp_c))
-            print("Dual fit: Exponential base correction [fixed limit],   y = p0*exp(-p1 * x) + "+str(meas.exp_c))
+            meas.log("\nKettős illesztés: exponenciális előszakasz korrekció [fixált limesz],   y = p0*exp(-p1 * x) + "+str(meas.exp_c))
+            print("Kettős illesztés: exponenciális előszakasz korrekció [fixált limesz],   y = p0*exp(-p1 * x) + "+str(meas.exp_c))
         meas.fitreport(params, covs)
         meas.bBaseExp = True
         meas.bBaseSpline = False
@@ -127,7 +127,8 @@ def dualfit(meas, method, limit):
         meas.bBaseSpline = True
         meas.bBaseExp = False
 
-        meas.log("Dual fit: Base fit and exponential limit connected with cubic spline")
+        meas.log("\nKettős illesztés: előszakasz korrekciója köbös spline-al")
+        print("Kettős illesztés: előszakasz korrekciója köbös spline-al")
 
 
 
@@ -168,7 +169,6 @@ def getTs(meas):
             meas.Ts.append(meas.y[i] + meas.exp_b*FHutil.trapcalc(xf,yf))
     meas.bTs = True
 
-
 def getTsOptimized(meas):
     if(not meas.bBase):
         print("Error: base fit not found")
@@ -190,6 +190,8 @@ def getTsOptimized(meas):
             presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tk, meas.x[i], meas.y[i] - Tk)
             meas.Ts.append(meas.y[i] + meas.exp_b*presum)
     meas.bTs = True
+
+
 
 
 def getTkValue(meas, xp = "indep"):
@@ -221,6 +223,16 @@ def getTkValue(meas, xp = "indep"):
 
 
 
+def getDTk(meas):
+    if(not meas.bBase):
+        print("Error in getDTk(): missing base fit")
+        return False
+
+    aTk = []
+    for i in range(len(meas.x)):
+        if(meas.base_start <= meas.x[i] <= meas.base_end):
+            aTk.append(meas.y[i])
+    return np.std(aTk)
 
 
 def fitmaincorrected(meas, xmin, xmax):
@@ -234,7 +246,7 @@ def fitmaincorrected(meas, xmin, xmax):
     meas.main_end = xmax
 
     params, covs = do_fit(meas.x,meas.Ts,xmin,xmax)
-    meas.log("\nMain fit in x["+str(xmin)+"; "+str(xmax)+"] onto T*,   y = p0*x + p1")
+    meas.log("\n(Korrigált) Főszakasz illesztése: x["+str(xmin)+"; "+str(xmax)+"] onto T*,   y = p0*x + p1")
     meas.fitreport(params, covs)
 
     meas.bMain = True
@@ -272,12 +284,12 @@ def calib(meas):
     print("U = ("+str(U)+" +/- "+str(DU)+") V")
 
     # FIXME: MIERT IS??
-    print("a_corr = ("+str(meas.main_a_corr)+" +/- "+str(meas.Dmain_a_corr)+") K/s")
+    print("a = ("+str(meas.main_a)+" +/- "+str(meas.Dmain_a)+") K/s")
 
     print("Beta = ("+str(meas.exp_b)+" +/- "+str(meas.Dexp_b)+") 1/s")
     # get Cp
-    meas.Cp = U**2/meas.R/meas.main_a_corr
-    meas.dCp = 2*DU/U + meas.DR/meas.R + meas.Dmain_a_corr/meas.main_a_corr
+    meas.Cp = U**2/meas.R/meas.main_a
+    meas.dCp = 2*DU/U + meas.DR/meas.R + meas.Dmain_a/meas.main_a
     print("=======================")
     print("Cp = ("+str(meas.Cp)+" +/- "+str(meas.dCp*meas.Cp)+") J/K")
 
@@ -286,16 +298,17 @@ def calib(meas):
     print("Alfa = ("+str(meas.alfa)+" +/- "+str(meas.dalfa*meas.alfa)+") W/K")
     meas.bCalib = True
 
-    meas.log("\nCalibration data:")
+    meas.log("\nKalibrációhoz szükséges adatok:")
     meas.log("R = ("+str(meas.R)+" +/- "+str(meas.DR)+") Ohm")
     meas.log("U = ("+str(U)+" +/- "+str(DU)+") V")
-    meas.log("a_corr = ("+str(meas.main_a_corr)+" +/- "+str(meas.Dmain_a_corr)+") K/s")
+    meas.log("a = ("+str(meas.main_a)+" +/- "+str(meas.Dmain_a)+") K/s")
     meas.log("Beta = ("+str(meas.exp_b)+" +/- "+str(meas.Dexp_b)+") 1/s")
     meas.log("=======================")
     meas.log("Cp = ("+str(meas.Cp)+" +/- "+str(meas.dCp*meas.Cp)+") J/K")
-    meas.log("Alfa = ("+str(meas.alfa)+" +/- "+str(meas.dalfa*meas.alfa)+") W/K\n")
+    meas.log("Alfa = ("+str(meas.alfa)+" +/- "+str(meas.dalfa*meas.alfa)+") W/K")
+    meas.log("A jegyzőkönyvben nem elég a végeredményt közölni! (A számolás menetének követhetőnek kell lennie az olvasó számára.)\n")
 
-    with open(meas.directory+"OUTfajho_kalibracio.dat", "w") as f:
+    with open(meas.directory+".fh_config", "w") as f:
         print("# Cp [J/K], D(Cp) [J/K], alfa [W/K], D(alfa) [W/K]", file=f)
         print(meas.Cp, meas.dCp*meas.Cp, meas.alfa, meas.dalfa*meas.alfa,file=f)
 
@@ -317,30 +330,26 @@ def rafut(meas):
 
     # get U
     t, U, DU = FHutil.getheatingdata(meas)
-    print("\nCalculating Cm data:")
+    print("\nCm-hez szükséges adatok:")
     print("R = ("+str(meas.R)+" +/- "+str(meas.DR)+") Ohm")
     print("U = ("+str(U)+" +/- "+str(DU)+") V")
-    print("a_corr = ("+str(meas.main_a_corr)+" +/- "+str(meas.Dmain_a_corr)+") K/s")
+    print("a = ("+str(meas.main_a)+" +/- "+str(meas.Dmain_a)+") K/s")
     # get Ck
-    Ck = U**2/meas.R/meas.main_a_corr
-    dCk = 2*DU/U + meas.DR/meas.R + meas.Dmain_a_corr/meas.main_a_corr
+    Ck = U**2/meas.R/meas.main_a
+    dCk = 2*DU/U + meas.DR/meas.R + meas.Dmain_a/meas.main_a
     print("=======================")
     print("Ck = ("+str(Ck)+" +/- "+str(dCk*Ck)+") J/K")
     print("Cm = ("+str(Ck-meas.Cp)+" +/- "+str(dCk*Ck + meas.dCp*meas.Cp)+") J/K")
 
-    meas.log("\nCalculating Cm data:")
+    meas.log("\nCm-hez szükséges adatok:")
     meas.log("R = ("+str(meas.R)+" +/- "+str(meas.DR)+") Ohm")
     meas.log("U = ("+str(U)+" +/- "+str(DU)+") V")
-    meas.log("a_corr = ("+str(meas.main_a_corr)+" +/- "+str(meas.Dmain_a_corr)+") K/s")
+    meas.log("a = ("+str(meas.main_a)+" +/- "+str(meas.Dmain_a)+") K/s")
     meas.log("=======================")
     meas.log("Ck = ("+str(Ck)+" +/- "+str(dCk*Ck)+") J/K")
     meas.log("Cm = ("+str(Ck-meas.Cp)+" +/- "+str(dCk*Ck + meas.dCp*meas.Cp)+") J/K")
-
-
-    with open(meas.directory+"OUTfajho_rafutes.dat", "w") as f:
-        print("# Ck [J/K], D(Ck) [J/K], Cm [J/K], D(Cm) [J/K]", file=f)
-        print(Ck, dCk*Ck, Ck-meas.Cp, dCk*Ck + meas.dCp*meas.Cp,file=f)
-
+    meas.log("A jegyzőkönyvben nem elég a végeredményt közölni! (A számolás menetének követhetőnek kell lennie az olvasó számára.)")
+    meas.log("További otthoni feladat a fajhőt az utószakasz paramétereiből meghatározni.\n")
 
 
 
@@ -376,7 +385,8 @@ def integrate(meas, xmin, xmax):
     #Tk, DTk = getTk()
     # this used to average over the whole baseline
     # no need, we need it at the start of the thing, so more precise to average just there!
-    Tk, DTk = getTkValue(meas, xmin)
+    Tk = getTkValue(meas, xmin)
+    DTk = getDTk(meas)
 
     for i in range(len(xf)):
         yf[i] -= getTkValue(meas, xf[i])   # nem kell [0] #FIXME két visszatérési érték ven!!!!!
@@ -395,10 +405,129 @@ def integrate(meas, xmin, xmax):
     print("=======================")
     print("Cm = ("+str(cm)+" +/- "+str(Dcm)+") J/K")
 
-    with open(directory+"OUTfajho_beejtesEgyszeruIntegral.dat", "w") as f:
-        print("Tm = ("+str(Tm)+" +/- "+str(DTm)+") C", file=f)
-        print("T0 = ("+str(Tk)+" +/- "+str(DTk)+") C", file=f)
-        print("T(t) = "+str(Tt)+" C", file=f)
-        print("Integral = "+str(integ)+" Cs", file=f)
-        print("=======================", file=f)
-        print("Cm = ("+str(cm)+" +/- "+str(Dcm)+") J/K", file=f)
+    meas.log("\nFajhő számításhoz szükséges adatok (beejtés adatsor integrálásával)")
+    meas.log("Tm = ("+str(Tm)+" +/- "+str(DTm)+") C")
+    meas.log("T0 = ("+str(Tk)+" +/- "+str(DTk)+") C")
+    meas.log("T(t) = "+str(Tt)+" C")
+    meas.log("Integral = "+str(integ)+" Cs")
+    meas.log("=======================")
+    meas.log("Cm = ("+str(cm)+" +/- "+str(Dcm)+") J/K")
+
+    meas.log("\nEz csak egy integrál eredménye, a végeredményt az iterált határú integrálok adatsorából kapjuk.\n")
+    meas.log("További otthoni feladat a fajhőt az utószakasz paraméteréből meghatározni.\n")
+
+
+def serialintegrate(meas, xmin, xmax1, xmax2):
+
+    if(not meas.bCalib):
+        print("Error: missing calib")
+        return
+    if(not meas.bExp):
+        print("Error: missing exp")
+        return
+    if(not meas.bBase):
+        print("Error: missing base")
+        return
+
+
+
+    Tm, DTm = getTm(meas, xmin)
+
+    # kell Tk
+    Tk = getTkValue(meas)
+
+    integrals = []
+    uplims = []
+    Tts = []
+
+
+
+    for i in range(len(meas.x)):
+        if(xmax1 <= meas.x[i] <= xmax2):
+            uplims.append(meas.x[i])
+            xf = []
+            yf = []
+            for j in range(len(meas.x)):
+                if(xmin <= meas.x[j] <= meas.x[i]):
+                    xf.append(meas.x[j])
+                    yf.append(meas.y[j])
+
+            # base correction
+            for j in range(len(xf)):
+                yf[j] -= getTkValue(meas, xf[j])
+                #yf[j] -= exp_c
+
+            integ = FHutil.trapcalc(xf,yf)
+            integrals.append(integ)
+            Tts.append(meas.y[i])  # yes this is i
+
+    cms = []
+    for i in range(len(integrals)):
+        cms.append( (meas.Cp*(Tts[i] - Tk)+meas.alfa*integrals[i])/( Tm-Tts[i] ) )
+
+
+    with open(meas.directory+"OUTfajho_beejtesSorozatosIntegral.dat", "w") as f:
+        print("# t [s], Cm [J/K]", file=f)
+        for i in range(len(uplims)):
+            print(uplims[i], cms[i], file=f)
+
+    meas.beejtAtlag = np.average(cms)
+    meas.dIntegral = np.std(cms)
+    return uplims, cms
+    import matplotlib.pyplot as plt
+    plt.clf()
+    plt.plot(uplims,cms)
+    plt.xlabel("Integrál felső határa (s)")
+    plt.ylabel(r'$C_{m}$ $(J/K)$')
+    plt.title("Variált felső határú integrálás")
+
+
+
+def serialintegrateOptimized(meas, xmin, xmax1, xmax2):
+
+    if(not meas.bCalib):
+        print("Error: missing calib")
+        return
+    if(not meas.bExp):
+        print("Error: missing exp")
+        return
+    if(not meas.bBase):
+        print("Error: missing base")
+        return
+
+
+
+    Tm, DTm = getTm(meas, xmin)
+
+    # kell Tk
+    Tk = getTkValue(meas)
+
+    integrals = []
+    uplims = []
+    Tts = []
+
+
+
+    cms = []
+
+    presum = 0
+
+    for i in range(len(meas.x)):
+        if(xmin <= meas.x[i]):
+            Tk = getTkValue(meas, meas.x[i])
+            presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tk, meas.x[i], meas.y[i] - Tk)
+
+        if(xmax1 <= meas.x[i] <= xmax2):
+            uplims.append(meas.x[i])
+            integrals.append(presum)
+            Tts.append(meas.y[i])  
+            cms.append( (meas.Cp*(Tts[-1] - Tk)+meas.alfa*integrals[-1])/( Tm-Tts[-1] ) )
+
+    with open(meas.directory+"OUTfajho_beejtesSorozatosIntegral.dat", "w") as f:
+        print("# t [s], Cm [J/K]", file=f)
+        for i in range(len(uplims)):
+            print(uplims[i], cms[i], file=f)
+
+    meas.beejtAtlag = np.average(cms)
+    meas.dIntegral = np.std(cms)
+    return uplims, cms

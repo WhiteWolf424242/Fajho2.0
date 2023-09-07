@@ -85,7 +85,7 @@ class Measurement:
 
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
-        self.log("\nOpened file: "+path+" at ["+str(current_time)+"]\n")
+        self.log("\nMegnyitva: "+path+" at ["+str(current_time)+"]\n")
 
         try:
             os.chdir(self.directory)
@@ -95,16 +95,16 @@ class Measurement:
         except NotADirectoryError:
             print("{0} is not a directory".format(self.directory))
         except PermissionError:
-            print("You do not have permissions to change to {0}".format(self.directory))
+            print("You do not have permissions to cd to {0}".format(self.directory))
 
-        if(os.path.exists(self.directory+"OUTfajho_kalibracio.dat")):
-            calin = np.loadtxt(self.directory+"OUTfajho_kalibracio.dat",skiprows = 1)
+        if(os.path.exists(self.directory+".fh_config")):
+            calin = np.loadtxt(self.directory+".fh_config",skiprows = 1)
             self.Cp = calin[0]
             self.dCp = calin[1] / self.Cp
             self.alfa = calin[2]
             self.dalfa = calin[3] / self.alfa
             self.bCalib = True
-            print("Existing calibration found:")
+            print("Kaloriméter kalibrációs paraméterek:")
             print("Cp = ("+str(self.Cp)+" +/- "+str(self.dCp*self.Cp)+") J/K")
             print("Alfa = ("+str(self.alfa)+" +/- "+str(self.dalfa*self.alfa)+") W/K")
 
