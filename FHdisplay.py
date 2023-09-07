@@ -268,6 +268,8 @@ class DisplayWindow:
             self.active_measurement = temp
             self.show(self.active_measurement)
             self.setfigtitle("","Figure 1")
+            if(not self.active_measurement.bCalib and command != self.calibwindow):
+                print("Vigyázat: még hiányoznak a kalibrációs adatok! Először a vízérték mérést értékeld ki!")
             command()
         else:
             self.currentcall()
@@ -1400,7 +1402,8 @@ class DisplayWindow:
         else:
             uplims, cms = self.evaltarget(self.active_measurement, self.aBounds[0], self.aBounds[1], self.aBounds[2])
             self.show(self.active_measurement)
-            self.finishfunction(uplims, cms, self.parentfunc)
+            if(uplims and cms):
+                self.finishfunction(uplims, cms, self.parentfunc)
 
 
 

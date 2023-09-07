@@ -86,6 +86,7 @@ class Measurement:
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
         self.log("\nMegnyitva: "+path+" at ["+str(current_time)+"]\n")
+        print("Megnyitva: "+path)
 
         try:
             os.chdir(self.directory)

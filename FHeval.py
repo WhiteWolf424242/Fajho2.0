@@ -316,7 +316,7 @@ def calib(meas):
 
 def rafut(meas):
     if(not meas.bCalib):
-        print("Error: missing calib")
+        print("Hiba: hiányoznak a kalibrációs adatok! Először a vízérték mérést értékeld ki!")
         return
     if(not meas.bBase):
         print("Error: missing base fit")
@@ -364,7 +364,7 @@ def getTm(meas,position):
 
 def integrate(meas, xmin, xmax):
     if(not meas.bCalib):
-        print("Error: missing calib")
+        print("Hiba: hiányoznak a kalibrációs adatok! Először a vízérték mérést értékeld ki!")
         return
     if(not meas.bExp):
         print("Error: missing exp fit")
@@ -420,7 +420,7 @@ def integrate(meas, xmin, xmax):
 def serialintegrate(meas, xmin, xmax1, xmax2):
 
     if(not meas.bCalib):
-        print("Error: missing calib")
+        print("Hiba: hiányoznak a kalibrációs adatok! Először a vízérték mérést értékeld ki!")
         return
     if(not meas.bExp):
         print("Error: missing exp")
@@ -486,7 +486,7 @@ def serialintegrate(meas, xmin, xmax1, xmax2):
 def serialintegrateOptimized(meas, xmin, xmax1, xmax2):
 
     if(not meas.bCalib):
-        print("Error: missing calib")
+        print("Hiba: hiányoznak a kalibrációs adatok! Először a vízérték mérést értékeld ki!")
         return
     if(not meas.bExp):
         print("Error: missing exp")

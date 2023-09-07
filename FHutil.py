@@ -24,10 +24,10 @@ def new(*args):
         #path = easygui.fileopenbox(filetypes=[["*","All files"],["*.*","All files"]]) 
         path = filedialog.askopenfilename(initialdir = ".",
                                           title = "Select a File",
-                                          filetypes = (("dat files",
-                                                        "*.dat"),
-                                                       ("all files",
-                                                        "*")))
+                                          filetypes = (("all files",
+                                                        "*"),
+                                                        ("dat files",
+                                                        "*.dat")))
     else:
         path = args[0]
     if(path):
@@ -99,7 +99,7 @@ def autozoom(plt, meas, region):
     ylim = [9999,0]
     if(region == "base"):
         xlim[0] = 0
-        for i in range(len(meas.y)):
+        for i in range(1,len(meas.y),1):
             if(meas.y[i] < ylim[0]):
                 ylim[0] = meas.y[i]
             if(meas.y[i] > ylim[1]):
@@ -115,7 +115,7 @@ def autozoom(plt, meas, region):
 
 
     if(region == "main"):
-        for i in range(len(meas.y)):
+        for i in range(1,len(meas.y),1):
             if(abs(np.average(meas.y[0:i:1]) - meas.y[i]) > 0.1):
                 xlim[0] = meas.x[i-10]
                 ylim[0] = meas.y[i-10]
@@ -127,7 +127,7 @@ def autozoom(plt, meas, region):
 
 
     if(region == "int"):
-        for i in range(len(meas.y)):
+        for i in range(1,len(meas.y),1):
             if(abs(np.average(meas.y[0:i:1]) - meas.y[i]) > 0.1):
                 xlim[0] = meas.x[i-20]
                 ylim[0] = meas.y[i-20]
