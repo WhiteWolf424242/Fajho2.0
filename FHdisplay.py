@@ -82,7 +82,7 @@ class DisplayWindow:
         for widget in self.window.winfo_children():
             widget.destroy()
 
-        self.window.title("Fajhő kiértékelő 2.0")
+        self.window.title("Fajhő kiértékelő 2")
 
         frame = tk.Frame(
             master=self.window,
