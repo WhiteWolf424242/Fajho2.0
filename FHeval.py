@@ -129,9 +129,13 @@ def dualfit(meas, method, limit):
 
         meas.log("\nKettős illesztés: előszakasz korrekciója köbös spline-al")
         print("Kettős illesztés: előszakasz korrekciója köbös spline-al")
+    else:
+        cleardualfit(meas)
 
 
-
+def cleardualfit(meas):
+    meas.bBaseSpline = False
+    meas.bBaseExp = False
 
 
 def getTs(meas):
@@ -190,6 +194,36 @@ def getTsOptimized(meas):
             presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tk, meas.x[i], meas.y[i] - Tk)
             meas.Ts.append(meas.y[i] + meas.exp_b*presum)
     meas.bTs = True
+
+
+
+'''Not used'''
+def getTsRevised(meas):
+    if(not meas.bBase):
+        print("Error: base fit not found")
+        return
+    if(not meas.bExp):
+        print("Error: exponential fit not found")
+        return
+
+    startpoint = meas.base_end
+
+
+    Tk0 = FHutil.flin(startpoint, meas.base_a, meas.base_b)
+
+    meas.Ts = []
+    presum = 0
+    for i in range(len(meas.x)):
+        if(meas.x[i] < startpoint):
+            meas.Ts.append(meas.y[i])
+        else:
+            #Tk = getTkValue(meas, meas.x[i])
+            Tki = FHutil.flin(meas.x[i], meas.base_a, meas.base_b)
+
+            presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tki, meas.x[i], meas.y[i] - Tki)
+            meas.Ts.append(meas.y[i] + meas.exp_b*presum - (Tk0 - Tki))
+    meas.bTs = True
+
 
 
 
@@ -370,6 +404,9 @@ def integrate(meas, xmin, xmax):
         print("Error: missing exp fit")
         return
 
+
+    meas.t_beejt = xmin  # mentsük el beejtés időpillanatát a sorozatoshoz
+
     xf = []
     yf = []
     for i in range(len(meas.x)):
@@ -382,14 +419,12 @@ def integrate(meas, xmin, xmax):
 
     Tm, DTm = getTm(meas, xmin)
 
-    #Tk, DTk = getTk()
-    # this used to average over the whole baseline
-    # no need, we need it at the start of the thing, so more precise to average just there!
+    # kell Tk a beejtés pillanatában
     Tk = getTkValue(meas, xmin)
     DTk = getDTk(meas)
 
     for i in range(len(xf)):
-        yf[i] -= getTkValue(meas, xf[i])   # nem kell [0] #FIXME két visszatérési érték ven!!!!!
+        yf[i] -= getTkValue(meas, xf[i])
 
     integ = FHutil.trapcalc(xf,yf)
 
@@ -400,6 +435,8 @@ def integrate(meas, xmin, xmax):
 
     print("Tm = ("+str(Tm)+" +/- "+str(DTm)+") C")
     print("T0 = ("+str(Tk)+" +/- "+str(DTk)+") C")
+    print("t0 = ("+str(xmin)+" s")
+    print("t = ("+str(xmax)+" s")
     print("T(t) = "+str(Tt)+" C")
     print("Integral = "+str(integ)+" Cs")
     print("=======================")
@@ -408,6 +445,8 @@ def integrate(meas, xmin, xmax):
     meas.log("\nFajhő számításhoz szükséges adatok (beejtés adatsor integrálásával)")
     meas.log("Tm = ("+str(Tm)+" +/- "+str(DTm)+") C")
     meas.log("T0 = ("+str(Tk)+" +/- "+str(DTk)+") C")
+    meas.log("t0 = ("+str(xmin)+" s")
+    meas.log("t = ("+str(xmax)+" s")
     meas.log("T(t) = "+str(Tt)+" C")
     meas.log("Integral = "+str(integ)+" Cs")
     meas.log("=======================")
@@ -417,6 +456,7 @@ def integrate(meas, xmin, xmax):
     meas.log("További otthoni feladat a fajhőt az utószakasz paraméteréből meghatározni.\n")
 
 
+'''Not used'''
 def serialintegrate(meas, xmin, xmax1, xmax2):
 
     if(not meas.bCalib):
@@ -430,11 +470,12 @@ def serialintegrate(meas, xmin, xmax1, xmax2):
         return
 
 
+    meas.t_beejt = xmin  # mentsük el beejtés időpillanatát a sorozatoshoz
 
     Tm, DTm = getTm(meas, xmin)
 
-    # kell Tk
-    Tk = getTkValue(meas)
+    # kell Tk a beejtés pillanatában
+    Tk = getTkValue(meas, xmin)
 
     integrals = []
     uplims = []
@@ -474,12 +515,6 @@ def serialintegrate(meas, xmin, xmax1, xmax2):
     meas.beejtAtlag = np.average(cms)
     meas.dIntegral = np.std(cms)
     return uplims, cms
-    import matplotlib.pyplot as plt
-    plt.clf()
-    plt.plot(uplims,cms)
-    plt.xlabel("Integrál felső határa (s)")
-    plt.ylabel(r'$C_{m}$ $(J/K)$')
-    plt.title("Variált felső határú integrálás")
 
 
 
@@ -495,12 +530,12 @@ def serialintegrateOptimized(meas, xmin, xmax1, xmax2):
         print("Error: missing base")
         return
 
-
+    meas.t_beejt = xmin  # mentsük el beejtés időpillanatát a sorozatoshoz
 
     Tm, DTm = getTm(meas, xmin)
 
-    # kell Tk
-    Tk = getTkValue(meas)
+    # kell Tk a beejtés pillanatában
+    Tk = getTkValue(meas, xmin)
 
     integrals = []
     uplims = []
@@ -514,8 +549,8 @@ def serialintegrateOptimized(meas, xmin, xmax1, xmax2):
 
     for i in range(len(meas.x)):
         if(xmin <= meas.x[i]):
-            Tk = getTkValue(meas, meas.x[i])
-            presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tk, meas.x[i], meas.y[i] - Tk)
+            Tki = getTkValue(meas, meas.x[i])
+            presum = FHutil.trapadd(presum, meas.x[i-1], meas.y[i-1] - Tki, meas.x[i], meas.y[i] - Tki)
 
         if(xmax1 <= meas.x[i] <= xmax2):
             uplims.append(meas.x[i])

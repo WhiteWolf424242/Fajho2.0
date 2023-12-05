@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import FHdisplay
-#import FHmeasurement
-#import FHutil
-#import FHeval
 import code
 import multiprocessing
 from datetime import datetime
@@ -12,7 +9,7 @@ import time
 
 # todo: add argument handler
 
-version = "2.0"
+version = "2.1"
 '''
 def pollDesperateMeasures():
     while(datetime.now().strftime("%H:%M") != "21:40"):

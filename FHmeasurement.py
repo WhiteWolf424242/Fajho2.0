@@ -38,6 +38,8 @@ class Measurement:
     bBaseExp = False
     baseexp_A, baseexp_b, baseexp_c = 0,0,0
 
+    t_beejt = False
+
     R = 4.60
     DR = 0.01
 
@@ -81,7 +83,7 @@ class Measurement:
 
         with open(path) as f:
             R_line = f.readline()
-            R = float(re.sub("[^\d\.]", "", R_line))
+            self.R = float(re.sub("[^\d\.]", "", R_line))
 
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
